@@ -8,5 +8,5 @@
     android:canPerformGestures="true"
     android:description="@string/app_name"
     android:notificationTimeout="100"
-    android:packageNames="cn.damai"
-    android:settingsActivity="com.rookie.addfriend.MainActivity" />
+    android:packageNames="cn.damai,com.moutai.mall"
+    android:settingsActivity="com.rookie.damaihelper.MainActivity" />

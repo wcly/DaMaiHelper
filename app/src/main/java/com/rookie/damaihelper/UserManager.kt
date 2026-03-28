@@ -1,23 +1,49 @@
 package com.rookie.damaihelper
 
-
-/*
- *  @项目名：  DaMaiHelper 
- *  @包名：    com.rookie.damaihelper
- *  @文件名:   UserManager
- *  @创建者:   rookietree
- *  @创建时间:  2023/5/11 14:19
- *  @描述：    
- */
 object UserManager {
+
+    enum class TaskMode {
+        DAMAI,
+        I_MAOTAI
+    }
 
     interface IStartListener {
         fun onStart()
     }
 
-    var startListener: IStartListener? = null
+    private const val DEFAULT_DAMAI_KEYWORD = "五月天"
+    private const val DEFAULT_I_MAOTAI_KEYWORD = "飞天"
 
-    var singer: String = "五月天"
+    var startListener: IStartListener? = null
+    var taskMode: TaskMode = TaskMode.DAMAI
+
+    private var damaiKeyword: String = DEFAULT_DAMAI_KEYWORD
+    private var iMaotaiKeyword: String = DEFAULT_I_MAOTAI_KEYWORD
+
+    var singer: String
+        get() = damaiKeyword
+        set(value) {
+            damaiKeyword = value
+        }
+
+    fun keywordOf(mode: TaskMode): String {
+        return when (mode) {
+            TaskMode.DAMAI -> damaiKeyword
+            TaskMode.I_MAOTAI -> iMaotaiKeyword
+        }
+    }
+
+    fun currentKeyword(): String = keywordOf(taskMode)
+
+    fun updateKeyword(mode: TaskMode, keyword: String) {
+        if (keyword.isBlank()) {
+            return
+        }
+        when (mode) {
+            TaskMode.DAMAI -> damaiKeyword = keyword
+            TaskMode.I_MAOTAI -> iMaotaiKeyword = keyword
+        }
+    }
 
     fun startQp() {
         startListener?.onStart()

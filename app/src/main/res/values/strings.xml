@@ -1,4 +1,15 @@
 <resources>
-    <string name="app_name">大麦助手</string>
-    <string name="acc_des">🔥大麦抢票助手🔥</string>
+    <string name="app_name">抢购助手</string>
+    <string name="acc_des">抢购助手无障碍服务</string>
+    <string name="label_target_mode">目标平台</string>
+    <string name="mode_damai">大麦抢票</string>
+    <string name="mode_i_maotai">i茅台申购</string>
+    <string name="hint_damai_keyword">请输入歌手或演出关键词，默认五月天</string>
+    <string name="hint_i_maotai_keyword">请输入酒款关键词，默认飞天</string>
+    <string name="action_start_damai">开始抢票</string>
+    <string name="action_start_i_maotai">开始申购</string>
+    <string name="tip_damai">请提前在大麦里选好场次、票档和观演人，再启动辅助</string>
+    <string name="tip_i_maotai">请先登录 i 茅台，并确保已经进入申购日可见的商品列表</string>
+    <string name="error_no_damai">未安装大麦</string>
+    <string name="error_no_i_maotai">未安装 i 茅台</string>
 </resources>

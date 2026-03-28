@@ -7,6 +7,7 @@ import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.*
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Path
 import android.graphics.Rect
@@ -72,7 +73,7 @@ fun Context.shortToast(msg: String) =
 fun Context.longToast(msg: String) =
     Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
 
-const val TAG = "大麦助手"
+const val TAG = "DaMaiHelper"
 const val SEGMENT_SIZE = 3072
 
 fun logD(content: String) {
@@ -105,18 +106,53 @@ fun logD(content: String) {
  * @param activityName 跳转APP的Activity名
  * @param errorTips 跳转页面不存在时的提示
  * */
-fun Context.startApp(packageName: String, activityName: String, errorTips: String) {
-    try {
-        startActivity(Intent(Intent.ACTION_VIEW).apply {
+fun Context.startApp(
+    packageName: String,
+    activityName: String? = null,
+    errorTips: String
+): Boolean {
+    logD("startApp package=$packageName activity=$activityName")
+    if (!isAppInstalled(packageName)) {
+        logD("startApp package not visible or not installed: $packageName")
+        shortToast(errorTips)
+        return false
+    }
+
+    val launcherIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    if (launcherIntent != null) {
+        try {
+            logD("startApp launch via package launcher")
+            startActivity(launcherIntent)
+            return true
+        } catch (e: Exception) {
+            e.message?.let { logD(it) }
+        }
+    }
+
+    if (!activityName.isNullOrBlank()) {
+        val explicitIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
             component = ComponentName(packageName, activityName)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        })
-    } catch (e: ActivityNotFoundException) {
-        shortToast(errorTips)
-    } catch (e: Exception) {
-        e.message?.let { logD(it) }
+        }
+        try {
+            logD("startApp fallback to explicit activity")
+            startActivity(explicitIntent)
+            return true
+        } catch (e: ActivityNotFoundException) {
+            logD("startApp explicit activity not found: $packageName/$activityName")
+        } catch (e: SecurityException) {
+            e.message?.let { logD(it) }
+        } catch (e: Exception) {
+            e.message?.let { logD(it) }
+        }
     }
+
+    shortToast("已安装目标应用，但无法自动打开，请手动打开后重试")
+    logD("startApp failed for package=$packageName")
+    return false
 }
 
 /**
@@ -131,6 +167,16 @@ fun Context.startApp(urlScheme: String, errorTips: String) {
         shortToast(errorTips)
     } catch (e: Exception) {
         e.message?.let { logD(it) }
+    }
+}
+
+@Suppress("DEPRECATION")
+fun Context.isAppInstalled(packageName: String): Boolean {
+    return try {
+        packageManager.getPackageInfo(packageName, 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
     }
 }
 
@@ -194,6 +240,78 @@ fun AccessibilityNodeInfo.getNodeByText(
         }
     }
     logD("查找组件，text:$text 找不到")
+    return null
+}
+
+fun AccessibilityNodeInfo.findNodeByTextOnce(
+    text: String,
+    allMatch: Boolean = false
+): AccessibilityNodeInfo? {
+    val nodeList = findAccessibilityNodeInfosByText(text)
+    if (nodeList.isNullOrEmpty()) {
+        return null
+    }
+    return if (allMatch) {
+        nodeList.firstOrNull { it.text == text }
+    } else {
+        nodeList[0]
+    }
+}
+
+fun AccessibilityNodeInfo?.labelText(): String {
+    if (this == null) {
+        return ""
+    }
+    return text?.toString()?.takeIf { it.isNotBlank() }
+        ?: contentDescription?.toString()?.takeIf { it.isNotBlank() }
+        ?: ""
+}
+
+fun AccessibilityNodeInfo.findNodeByPredicate(
+    predicate: (AccessibilityNodeInfo) -> Boolean
+): AccessibilityNodeInfo? {
+    if (predicate(this)) {
+        return this
+    }
+    for (index in 0 until childCount) {
+        getChild(index)?.findNodeByPredicate(predicate)?.let { return it }
+    }
+    return null
+}
+
+fun AccessibilityNodeInfo.findNodeByLabels(
+    labels: Collection<String>,
+    exactMatch: Boolean = false
+): AccessibilityNodeInfo? {
+    val candidates = labels.filter { it.isNotBlank() }
+    if (candidates.isEmpty()) {
+        return null
+    }
+    return findNodeByPredicate { node ->
+        val label = node.labelText().trim()
+        if (label.isEmpty()) {
+            return@findNodeByPredicate false
+        }
+        candidates.any { candidate ->
+            if (exactMatch) {
+                label == candidate
+            } else {
+                label.contains(candidate)
+            }
+        }
+    }
+}
+
+fun AccessibilityNodeInfo.findNodeAroundByLabels(
+    labels: Collection<String>,
+    exactMatch: Boolean = false,
+    maxAncestorDepth: Int = 4
+): AccessibilityNodeInfo? {
+    var current: AccessibilityNodeInfo? = this
+    repeat(maxAncestorDepth) {
+        current = current?.parent ?: return null
+        current?.findNodeByLabels(labels, exactMatch)?.let { return it }
+    }
     return null
 }
 
