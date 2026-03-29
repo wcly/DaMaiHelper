@@ -47,13 +47,17 @@ class MainActivity : BaseActivity() {
 
         persistKeyword()
         logD("startQiangp keyword=${UserManager.keyword}")
+        
+        val intent = Intent(this, IMaotaiHelperService::class.java)
+        stopService(intent)
+        startService(intent)
+        
         if (startApp(
                 packageName = IMaotaiHelperService.I_MAOTAI_PKG_NAME,
                 errorTips = getString(R.string.error_no_i_maotai)
             )
         ) {
             logD("startQiangp target launched")
-            UserManager.startQp()
         } else {
             logD("startQiangp failed to launch target app")
         }

@@ -19,7 +19,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
 
-class IMaotaiHelperService : AccessibilityService(), UserManager.IStartListener {
+class IMaotaiHelperService : AccessibilityService() {
 
     companion object {
         const val I_MAOTAI_PKG_NAME = "com.moutai.mall"
@@ -48,14 +48,26 @@ class IMaotaiHelperService : AccessibilityService(), UserManager.IStartListener 
     override fun onCreate() {
         super.onCreate()
         createForegroundNotification()?.let { startForeground(1, it) }
-        UserManager.startListener = this
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isStop = false
+        step = STEP_READY
+        showWindow()
+        return super.onStartCommand(intent, flags, startId)
     }
 
     private fun showWindow() {
-        if (windowManager != null) {
-            return
-        }
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        
+        if (overlayView != null) {
+            try {
+                windowManager?.removeView(overlayView)
+            } catch (e: Exception) {
+                logD("showWindow removeView error: ${e.message}")
+            }
+        }
+        
         overlayView = (getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater)
             .inflate(R.layout.float_app_view, null) as ConstraintLayout
         val params = WindowManager.LayoutParams(
@@ -71,6 +83,8 @@ class IMaotaiHelperService : AccessibilityService(), UserManager.IStartListener 
         overlayView?.findViewById<TextView>(R.id.tv_switch)?.setOnClickListener {
             stopForeground(true)
             overlayView?.let { view -> windowManager?.removeView(view) }
+            overlayView = null
+            windowManager = null
             stopSelf()
             isStop = true
         }
@@ -219,12 +233,6 @@ class IMaotaiHelperService : AccessibilityService(), UserManager.IStartListener 
         return iMaotaiUnavailableTexts.any { label.contains(it) }
     }
 
-    override fun onStart() {
-        isStop = false
-        step = STEP_READY
-        showWindow()
-    }
-
     override fun onInterrupt() {
     }
 
@@ -253,7 +261,15 @@ class IMaotaiHelperService : AccessibilityService(), UserManager.IStartListener 
 
     override fun onDestroy() {
         stopForeground(true)
-        overlayView?.let { view -> windowManager?.removeView(view) }
+        overlayView?.let { view -> 
+            try {
+                windowManager?.removeView(view)
+            } catch (e: Exception) {
+                logD("onDestroy removeView error: ${e.message}")
+            }
+        }
+        overlayView = null
+        windowManager = null
         super.onDestroy()
     }
 }
