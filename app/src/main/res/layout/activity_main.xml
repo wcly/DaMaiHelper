@@ -9,60 +9,33 @@
     android:paddingBottom="20dp">
 
     <TextView
-        android:id="@+id/tv_mode_label"
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_target_mode"
+        android:text="@string/label_i_maotai_keyword"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <RadioGroup
-        android:id="@+id/rg_mode"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_mode_label">
-
-        <RadioButton
-            android:id="@+id/rb_damai"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/mode_damai" />
-
-        <RadioButton
-            android:id="@+id/rb_i_maotai"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:text="@string/mode_i_maotai" />
-    </RadioGroup>
 
     <EditText
         android:id="@+id/et_keyword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="@string/hint_damai_keyword"
+        android:layout_marginTop="12dp"
+        android:hint="@string/hint_i_maotai_keyword"
         android:inputType="text"
         android:maxLines="1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rg_mode" />
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
     <Button
         android:id="@+id/btn_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:background="@color/design_default_color_primary"
+        android:layout_marginTop="24dp"
         android:padding="10dp"
-        android:text="@string/action_start_damai"
-        android:textColor="@color/white"
+        android:text="@string/action_start_i_maotai"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_keyword" />
@@ -73,8 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="@string/tip_damai"
-        android:textColor="@color/design_default_color_error"
+        android:text="@string/tip_i_maotai"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_start" />
